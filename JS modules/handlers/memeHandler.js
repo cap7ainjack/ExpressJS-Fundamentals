@@ -3,6 +3,7 @@ const path = require('path');
 const db = require('../db/database');
 const qs = require('querystring');
 const url = require('url');
+const http = require('http')
 
 const formidable = require('formidable'); //for file upload
 const shortId = require('shortid') //fileNames generator
@@ -18,6 +19,8 @@ module.exports = (req, res) => {
     addMeme(req, res)
   } else if (req.pathname.startsWith('/getDetails') && req.method === 'GET') {
     getDetails(req, res)
+  } else if (req.pathname.startsWith('/download') && req.method === 'GET') {
+    downloadMemeImage(req,res)
   } else {
     return true
   }
@@ -25,7 +28,7 @@ module.exports = (req, res) => {
 
 //Utils
 let defaultSuccessReposne = (res, data) => {
-  res.writeHead(200, {'content-type': 'text/html'})
+  res.writeHead(200, { 'content-type': 'text/html' })
   res.end(data);
 }
 
@@ -38,6 +41,27 @@ let memeGenerator = (id, status, path, memeTitle, memeDescription) => {
     privacy: status,
     dateStamp: Date.now()
   }
+}
+
+//TODO:
+let downloadMemeImage = (req, res) =>{
+  let fileUrl = req.pathname.substring(10);
+  let writeStream = fs.createWriteStream(`${fileUrl}`)
+  
+  console.log(fileUrl)
+    // This pipes the POST data to the file
+    req.pipe(writeStream);
+  
+    // After all the data is saved, respond with a simple html form so they can post more data
+    req.on('end', function () {
+      res.writeHead(200, {"content-type":"text/html"});
+      res.end('<form method="POST"><input name="test" /><input type="submit"></form>');
+    });
+  
+    // This is here incase any errors occur
+    writeStream.on('error', function (err) {
+      console.log(err);
+    });
 }
 
 let addMeme = (req, res) => {
@@ -57,9 +81,12 @@ let addMeme = (req, res) => {
         console.log(err);
         fs.mkdirSync(`./public/memeStorage/${dbLength}`)
       }
-      file.path = memePath;
     })
+
+    file.path = memePath;
   })
+
+
 
   form.parse(req, (err, fields, files) => {
     if (err) {
@@ -74,9 +101,9 @@ let addMeme = (req, res) => {
       .memes
       .addMeme(memeObj);
 
-    res.writeHead(200, {'content-type': 'text/html'});
+    res.writeHead(200, { 'content-type': 'text/html' });
     res.write(`recieved upload:\n\n
-              <a src='/'> home </a>`)
+    <a href="/">start page!</a>`)
     res.end();
   });
 }
@@ -97,7 +124,7 @@ function getDetails(req, res) {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, {'Content-Type': 'text/plain'})
+      res.writeHead(404, { 'Content-Type': 'text/plain' })
       res.write('Resource not found!')
       res.end();
       return;
@@ -117,7 +144,7 @@ function getDetails(req, res) {
           <img src="${targetedMeme.memeSrc}" alt=""/>
           <h3>Title  ${targetedMeme.title}</h3>
           <p> ${targetedMeme.description}</p>
-          <button><a href="${targetedMeme.posterSrc}">Download Meme</a></button>
+          <button><a href="/download/${targetedMeme.memeSrc}">Download Meme</a></button>
         </div>`)
 
     defaultSuccessReposne(res, data);
@@ -130,7 +157,7 @@ function viewAll(req, res) {
   fs.readFile(filePath, (err, data) => {
     if (err) {
       console.log(err)
-      res.writeHead(404, {'Content-Type': 'text/plain'})
+      res.writeHead(404, { 'Content-Type': 'text/plain' })
 
       res.write('404 not found!')
       res.end();
