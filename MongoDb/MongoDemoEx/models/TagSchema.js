@@ -7,7 +7,8 @@ let tagSchema = mongoose.Schema({
     },
     creationDate: {
         type: mongoose.Schema.Types.Date,
-        require: true
+        require: true,
+        default: Date.now() //check is correct
     },
     description: {
         type: mongoose.Schema.Types.String
@@ -21,7 +22,7 @@ let tagSchema = mongoose.Schema({
 
 })
 
-tagSchema.methods.nameToLowerCase = function(){
+tagSchema.methods.nameToLowerCase = function () {
     return this.name.toLowerCase();
 }
 
