@@ -1,11 +1,16 @@
 {
   "name": "jsmodules",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "cj",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "shortid": "^2.2.8",
+    "formidable": "^1.1.1"
+  },
+  "devDependencies": {},
+  "description": ""
 }
